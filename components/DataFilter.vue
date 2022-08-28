@@ -20,12 +20,18 @@
         v-model="selectedFilterValues.gender"
         @change="setFilter(selectedFilterValues.gender, 'gender')"
         >
+        <template v-slot:selection="{ item, index }">
+          <v-chip v-if="index === 0">
+            <span>{{ item }}</span>
+          </v-chip>
+          <span
+            v-if="index === 1"
+            class="grey--text text-caption"
+          >
+            (+{{ selectedFilterValues.gender.length - 1 }} others)
+          </span>
+      </template>
       </v-select>
-
-      <div>
-          <span v-if="selectedFilterValues.gender.length > 0"> {{selectedFilterValues.gender[0]}}</span>
-          <span v-if="selectedFilterValues.gender.length > 1">{{(selectedFilterValues.gender.length)-1}}</span>
-      </div>
     </v-col>
     
     <v-col>
@@ -36,11 +42,18 @@
         v-model="selectedFilterValues.country"
         @change="setFilter(selectedFilterValues.country, 'country')"
         >
+        <template v-slot:selection="{ item, index }">
+          <v-chip v-if="index === 0">
+            <span>{{ item }}</span>
+          </v-chip>
+          <span
+            v-if="index === 1"
+            class="grey--text text-caption"
+          >
+            (+{{ selectedFilterValues.country.length - 1 }} others)
+          </span>
+        </template>
       </v-select>
-      <div>
-          <span v-if="selectedFilterValues.country.length > 0"> {{selectedFilterValues.country[0]}}</span>
-          <span v-if="selectedFilterValues.country.length > 1">{{(selectedFilterValues.country.length)-1}}</span>
-      </div>
     </v-col>
 
     <button @click="clearFilter(); clearFilterValues();">Clear filter</button>
@@ -77,4 +90,15 @@ export default {
 <style lang="sass" scoped>
   .v-data-table
     max-width: 100%
+</style>
+
+<style lang="sass">
+  .v-select
+    &__selections
+      min-height: 40px
+
+  .v-input
+    &__control
+      min-height: 40px
+
 </style>

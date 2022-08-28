@@ -11,32 +11,24 @@
           v-if="items.length < 1000"
           :headers="headers"
           :items="items"
-          :search="filterSettings.search"
           item-key="email"
           dense
           :options.sync="options"
           :server-items-length="totalItems"
           :loading="loading"
+          :footer-props="{'items-per-page-options':[5, 10, 15, 30, 50]}"
         ).elevation-1.mt-10
 
-        // v-progress-circular(
-        //   v-else
-        //   width="2"
-        //   color="rs__primary"
-        //   indeterminate
-        // ).mx-auto
 </template>
 
 <script>
-import DataTable from '~/components/DataTable.vue'
 import DataFilter from '~/components/DataFilter.vue'
 import sales from '~/api/sales.js'
 import {gender_list, country_list} from '../global/filterData.js'
 
 export default {
   components: {
-    DataFilter,
-    DataTable,
+    DataFilter
   },
   data() {
     return {
@@ -89,7 +81,9 @@ export default {
   methods: {
     async getDataFromApi(){
       this.loading = true;
+
       let tableData = await this.fetchData();
+
       this.items = tableData.items
       this.totalItems = tableData.totalItems
       this.loading = false
@@ -102,6 +96,7 @@ export default {
           let items = response
           const totalItems = response.length
 
+          // SORT COLOUMNS
           if (sortBy.length === 1 && sortDesc.length === 1) {
             items = items.sort((a, b) => {
               const sortA = a[sortBy[0]]
@@ -119,9 +114,43 @@ export default {
             })
           }
 
+          // FILTER BY GENDER
+          if (this.filterSettings.gender.length){
+            const selectedValues = this.filterSettings.gender
+            const filterArg = item => selectedValues.includes(item.gender)
+
+            filterData(filterArg)
+          }
+
+          // FILTER BY COUNTRY
+          if (this.filterSettings.country.length){
+            const selectedValues = this.filterSettings.country
+            const filterArg = item => selectedValues.includes(item.country)
+
+            filterData(filterArg)
+          }
+
+          // GET SEARCH INPUT FILTERING
+          if (this.filterSettings.search){
+            let searchInput = this.filterSettings.search
+            searchInput = searchInput.toLowerCase();
+            const filterArg = item => item.user.first_name.toLowerCase().includes(searchInput) || item.user.last_name.toLowerCase().includes(searchInput) || item.email.toLowerCase().includes(searchInput)
+
+            filterData(filterArg)
+          }
+
+          // FILTER DATA
+          function filterData(filterArg){
+            const filteredItems = items.filter(filterArg)
+            items = filteredItems
+          }
+
+          // DEFINE ITEMS PER PAGE
           if (itemsPerPage > 0) {
             items = items.slice((page - 1) * itemsPerPage, page * itemsPerPage)
           }
+
+          console.log(items)
 
           setTimeout(() => {
             resolve({
@@ -136,20 +165,27 @@ export default {
       console.log(filterType)
       if (filterType === "gender"){
         this.filterSettings.gender = selectedValues;
+        this.getDataFromApi();
       }
 
       if (filterType === "country"){
         this.filterSettings.country = selectedValues;
+
+        this.getDataFromApi();
       }
 
       if (filterType === "search"){
         this.filterSettings.search = selectedValues;
+
+        this.getDataFromApi();
       }
     },
     clearFilter(){
       this.filterSettings.gender = [];
       this.filterSettings.country = [];
       this.filterSettings.search = "";
+
+      this.getDataFromApi();
     },
   }
 }
