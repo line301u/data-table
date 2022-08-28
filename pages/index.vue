@@ -3,22 +3,28 @@
     v-row
       v-col(cols)
         DataFilter(
-          v-if="items.length"
+          v-if="items.length < 1000"
           :setFilter="setFilter"
           :clearFilter="clearFilter"
         )
-        DataTable(
-          v-if="items.length"
+        v-data-table(
+          v-if="items.length < 1000"
           :headers="headers"
           :items="items"
           :search="filterSettings.search"
-        )
-        v-progress-circular(
-          v-else
-          width="2"
-          color="rs__primary"
-          indeterminate
-        ).mx-auto
+          item-key="email"
+          dense
+          :options.sync="options"
+          :server-items-length="totalItems"
+          :loading="loading"
+        ).elevation-1.mt-10
+
+        // v-progress-circular(
+        //   v-else
+        //   width="2"
+        //   color="rs__primary"
+        //   indeterminate
+        // ).mx-auto
 </template>
 
 <script>
@@ -36,6 +42,7 @@ export default {
     return {
       sales,
       items: [],
+      totalItems: 0,
       loading: true,
       options: {},
       filterSettings:{
@@ -68,19 +75,63 @@ export default {
       ],
     }
   },
-
-  async created() {
-    this.items = await this.fetchData(0, 50)
+    async created() {
+    this.getDataFromApi();
   },
+  watch: {
+      options: {
+        async handler() {
+          await this.getDataFromApi()
+        },
+        deep: true,
+      },
+    },
   methods: {
-    async fetchData(page, size) {
-      const start = page * size
-      await this.delay(3000)
-      return await sales.results.slice(start, start + size)
+    async getDataFromApi(){
+      this.loading = true;
+      let tableData = await this.fetchData();
+      this.items = tableData.items
+      this.totalItems = tableData.totalItems
+      this.loading = false
     },
-    delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms))
+    async fetchData() {
+          const response = await sales.results
+        
+          return new Promise((resolve, reject) => {
+          const { sortBy, sortDesc, page, itemsPerPage } = this.options
+          let items = response
+          const totalItems = response.length
+
+          if (sortBy.length === 1 && sortDesc.length === 1) {
+            items = items.sort((a, b) => {
+              const sortA = a[sortBy[0]]
+              const sortB = b[sortBy[0]]
+
+              if (sortDesc[0]) {
+                if (sortA < sortB) return 1
+                if (sortA > sortB) return -1
+                return 0
+              } else {
+                if (sortA < sortB) return -1
+                if (sortA > sortB) return 1
+                return 0
+              }
+            })
+          }
+
+          if (itemsPerPage > 0) {
+            items = items.slice((page - 1) * itemsPerPage, page * itemsPerPage)
+          }
+
+          setTimeout(() => {
+            resolve({
+              items,
+              totalItems,
+            })
+          }, 2000)
+        })
     },
+  
     setFilter(selectedValues, filterType) {
       console.log(filterType)
       if (filterType === "gender"){
