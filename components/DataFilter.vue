@@ -114,6 +114,10 @@ export default {
           justify-content: space-between
           justify-content: flex-start
 
+      .v-select
+        input
+          cursor: pointer
+
       &__search
         flex-grow: 1
         width: 100%
@@ -123,7 +127,7 @@ export default {
 
         .v-input
           &__slot
-            border: 1px solid $rs__grey-2
+            border: 1.5px solid $rs__grey-2
             border-radius: 0.3rem
           
           &__control
@@ -167,9 +171,10 @@ export default {
         font-size: 0.825rem
         color: $rs__grey-6 !important
         margin-left: .5rem
+        font-weight: 500
       
       .v-label--active
-        transform: translateY(-28px) scale(0.75)
+        transform: translateY(-28px) scale(0.9)
         color: red
         margin-left: 0rem
         color: $rs__grey-6 !important
@@ -215,6 +220,7 @@ export default {
       padding: .2rem 1rem
       border-radius: 0.3rem
       max-height: 30px
+      font-weight: 500
   
   .v-messages, .v-text-field__details
     display: none !important
