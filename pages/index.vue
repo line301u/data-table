@@ -53,13 +53,13 @@ export default {
       ],
     }
   },
-    async created() {
+    created() {
     this.getDataFromApi();
   },
   watch: {
       options: {
-        async handler() {
-          await this.getDataFromApi()
+        handler() {
+          this.getDataFromApi()
         },
         deep: true,
       },
